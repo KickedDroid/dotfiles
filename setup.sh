@@ -13,6 +13,14 @@ echo "[!] Starting rust configuration ...";
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh;
 
+cargo install --locked zellij;
+
+cargo install rustscan; 
+
+cargo install bottom; 
+
+cargo install alacritty;
+
 
 
 
