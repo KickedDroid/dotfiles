@@ -1,6 +1,6 @@
 echo "[+] Starting Setup ...";
 
-sudo apt install i3status dmenu &&
+sudo apt install i3 i3status dmenu &&
 
 echo "[+] i3 installed, setting up config";
 
