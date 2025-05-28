@@ -19,8 +19,7 @@ cargo install rustscan;
 
 cargo install bottom; 
 
-cargo install alacritty;
-
+sudo apt install alacritty
 
 
 
