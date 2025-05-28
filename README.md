@@ -1,9 +1,11 @@
 # dotfiles
 
 ```
-curl -L 
+curl -L https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/setup.sh | bash 
 ```
 
+
+---
 
 ```
 python3 -m pipx install impacket
