@@ -1,4 +1,8 @@
 # dotfiles
+Enable clipboard
+```
+sudo apt install spice-vdagent
+```
 
 ```
 curl -L https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/setup.sh | bash 
