@@ -15,9 +15,8 @@ echo "[!] Starting rust configuration ...";
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh;
 
 cargo install --locked zellij;
-
 cargo install rustscan; 
-
+cargo install zoxide;
 cargo install bottom; 
 
 sudo apt install alacritty;
