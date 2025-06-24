@@ -4,6 +4,7 @@ sudo apt install i3 i3status dmenu &&
 
 echo "[+] i3 installed, setting up config";
 
+mkdir ~/.config
 touch ~/.config/i3/config;
 sudo curl -o ~/.config/i3/config https://raw.githubusercontent.com/KickedDroid/dotfiles/refs/heads/main/i3/config &&
 
