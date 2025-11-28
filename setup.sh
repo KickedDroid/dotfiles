@@ -1,14 +1,19 @@
-echo "[+] Starting Setup ...";
+#!/bin/bash
+set -euo pipefail   # abort on error, treat unset vars as failures
 
-sudo apt install i3 i3status dmenu &&
+echo "[+] Installing i3, i3status and dmenu …"
+sudo apt-get update -qq
+sudo apt-get install -y -qq i3 i3status dmenu
 
-echo "[+] i3 installed, setting up config";
 
-mkdir ~/.config/i3/
-touch ~/.config/i3/config;
-sudo curl -o ~/.config/i3/config https://raw.githubusercontent.com/KickedDroid/dotfiles/refs/heads/main/i3/config &&
+CONFIG_URL="https://raw.githubusercontent.com/KickedDroid/dotfiles/refs/heads/main/i3/config"
+CONFIG_DIR="${HOME}/.config/i3"
 
-echo "[+] i3 configured"; 
+echo "[+] Setting up i3 configuration …"
+mkdir -p "${CONFIG_DIR}"                     # create the directory if it doesn't exist
+curl -fsSL "${CONFIG_URL}" -o "${CONFIG_DIR}/config"
+
+echo "[+] i3 is installed and configured. Start it with 'startx' or log out/in.";
 
 echo "[!] Starting rust configuration ...";
 
@@ -18,20 +23,38 @@ cargo install --locked zellij;
 cargo install rustscan; 
 cargo install zoxide;
 cargo install bottom; 
+cargo install --locked alacritty
 
-sudo apt install alacritty;
+echo "[+] Cloning tools ..."
+
+TOOLS_DIR="${HOME}/Documents/tools"
+mkdir -p "${TOOLS_DIR}"
+cd "${TOOLS_DIR}"
+
+declare -a REPOS=(
+    "https://github.com/arthaud/git-dumper.git"
+    "https://github.com/micahvandeusen/gMSADumper.git"
+    "https://github.com/urbanadventurer/username-anarchy.git"
+    "https://github.com/dirkjanm/PKINITtools.git"
+    "https://github.com/ShutdownRepo/pywhisker.git"
+    "https://github.com/ShutdownRepo/targetedKerberoast.git"
+    "https://github.com/jalvarezz13/Krb5RoastParser.git"
+)
+
+echo "[+] Cloning ${#REPOS[@]} repositories into ${TOOLS_DIR} …"
+for repo in "${REPOS[@]}"; do
+    git clone --depth 1 "${repo}"
+done
 
 
-mkdir ~/Documents/tools & cd ~/Documents/tools;
+LS_AD_USERS_URL="https://github.com/KickedDroid/ls-ad-users/raw/refs/heads/master/ls-ad-users"
+LS_AD_USERS_FILE="${TOOLS_DIR}/ls-ad-users"
 
-git clone https://github.com/arthaud/git-dumper.git;
-git clone https://github.com/micahvandeusen/gMSADumper.git;
-git clone https://github.com/urbanadventurer/username-anarchy.git;
-git clone https://github.com/dirkjanm/PKINITtools.git;
-git clone https://github.com/ShutdownRepo/pywhisker.git;
-git clone https://github.com/ShutdownRepo/targetedKerberoast.git;
-wget -o https://github.com/KickedDroid/ls-ad-users/raw/refs/heads/master/ls-ad-users;
-git clone https://github.com/jalvarezz13/Krb5RoastParser.git;
+echo "[+] Downloading ls‑ad‑users script …"
+wget -q -O "${LS_AD_USERS_FILE}" "${LS_AD_USERS_URL}"
+chmod +x "${LS_AD_USERS_FILE}" 
+
+echo "[+] All tools are now in ${TOOLS_DIR}"
 
 
 
