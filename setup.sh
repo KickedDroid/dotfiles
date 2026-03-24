@@ -12,7 +12,7 @@ set -euo pipefail   # abort on error, treat unset vars as failures
 
 echo "[+] Installing i3, i3status and dmenu …"
 sudo apt-get update -qq
-sudo apt-get install -y -qq i3 i3status dmenu
+sudo apt-get install -y -qq i3 i3status dmenu alacritty
 
 
 CONFIG_URL="https://raw.githubusercontent.com/KickedDroid/dotfiles/refs/heads/main/i3/config"
@@ -32,7 +32,6 @@ cargo install --locked zellij;
 cargo install rustscan; 
 cargo install zoxide;
 cargo install bottom; 
-cargo install --locked alacritty
 
 echo "[+] Cloning tools ..."
 
