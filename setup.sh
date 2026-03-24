@@ -3,7 +3,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 
 wget https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/.zshrc;
 
-mkdir Picture/backgrounds;
+mkdir Pictures/backgrounds;
 
 wget -O Pictures/backgrounds/kali-bg.png https://github.com/KickedDroid/kickeddroid.github.io/blob/main/Assets/kali-background.png\?raw\=true;
 
