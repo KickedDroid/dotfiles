@@ -1,4 +1,13 @@
 #!/bin/bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)";
+
+wget https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/.zshrc;
+
+mkdir Picture/backgrounds;
+
+wget -O Pictures/backgrounds/kali-bg.png https://github.com/KickedDroid/kickeddroid.github.io/blob/main/Assets/kali-background.png\?raw\=true;
+
+
 set -euo pipefail   # abort on error, treat unset vars as failures
 
 echo "[+] Installing i3, i3status and dmenu …"
