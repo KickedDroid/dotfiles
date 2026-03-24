@@ -29,6 +29,8 @@ echo "[!] Starting rust configuration ...";
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh;
 . "$HOME/.cargo/env";
 cargo install --locked zellij;
+wget -O ~/.config/zellij/config.kdl https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/zellij/config.kdl
+
 cargo install rustscan; 
 cargo install zoxide;
 cargo install bottom; 
