@@ -1,8 +1,6 @@
 #!/bin/bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)";
 
-wget https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/.zshrc;
-
 mkdir Pictures/backgrounds;
 
 wget -O Pictures/backgrounds/kali-bg.png https://github.com/KickedDroid/kickeddroid.github.io/blob/main/Assets/kali-background.png\?raw\=true;
@@ -36,8 +34,9 @@ cargo install rustscan;
 cargo install zoxide;
 cargo install bottom; 
 
-echo "[+] Cloning tools ..."
 
+
+echo "[+] Cloning tools ..."
 TOOLS_DIR="${HOME}/Documents/tools"
 mkdir -p "${TOOLS_DIR}"
 cd "${TOOLS_DIR}"
@@ -57,6 +56,11 @@ for repo in "${REPOS[@]}"; do
     git clone --depth 1 "${repo}"
 done
 
+echo "[+] Installing gopacket"
+sudo apt install libpcap-dev -y
+sudo apt install golang -y
+git clone https://github.com/mandiant/gopacket
+gopacket/install.sh --target native
 
 LS_AD_USERS_URL="https://github.com/KickedDroid/ls-ad-users/raw/refs/heads/master/ls-ad-users"
 LS_AD_USERS_FILE="${TOOLS_DIR}/ls-ad-users"
@@ -66,6 +70,8 @@ wget -q -O "${LS_AD_USERS_FILE}" "${LS_AD_USERS_URL}"
 chmod +x "${LS_AD_USERS_FILE}" 
 
 echo "[+] All tools are now in ${TOOLS_DIR}"
+echo "[+] Setting .zshrc"
+wget https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/.zshrc;
 
 
 
