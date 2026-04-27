@@ -21,7 +21,7 @@ wget -O "$BASE_DIR/Pictures/backgrounds/kali-bg.png" "https://github.com/KickedD
 echo "[+] Installing i3 and terminal utilities..."
 sudo apt-get update -qq
 sudo apt-get install -y -qq i3 i3status dmenu alacritty feh libpcap-dev golang
-sudo apt-get install -y -qq faketime bloodyAD certipy-ad 
+sudo apt-get install -y -qq faketime bloodyAD certipy-ad spice-vdagent
 
 # i3 Config
 CONFIG_DIR="$HOME/.config/i3"
