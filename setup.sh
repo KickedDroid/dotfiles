@@ -1,45 +1,51 @@
 #!/bin/bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)";
 
-mkdir Pictures/backgrounds;
+set -euo pipefail
 
-wget -O Pictures/backgrounds/kali-bg.png https://github.com/KickedDroid/kickeddroid.github.io/blob/main/Assets/kali-background.png\?raw\=true;
+echo "[+] Initializing environment..."
+BASE_DIR="$HOME"
+TOOLS_DIR="$BASE_DIR/Documents/tools"
 
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    echo "[+] Installing Oh My Zsh..."
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+else
+    echo "[!] Oh My Zsh already installed, skipping..."
+fi
 
-set -euo pipefail   # abort on error, treat unset vars as failures
+# Set Background 
+mkdir -p "$BASE_DIR/Pictures/backgrounds"
+wget -O "$BASE_DIR/Pictures/backgrounds/kali-bg.png" "https://github.com/KickedDroid/kickeddroid.github.io/blob/main/Assets/kali-background.png?raw=true"
 
-echo "[+] Installing i3, i3status and dmenu …"
+# System Packages
+echo "[+] Installing i3 and terminal utilities..."
 sudo apt-get update -qq
-sudo apt-get install -y -qq i3 i3status dmenu alacritty feh 
+sudo apt-get install -y -qq i3 i3status dmenu alacritty feh libpcap-dev golang
+sudo apt-get install -y -qq faketime bloodyAD certipy-ad 
 
+# i3 Config
+CONFIG_DIR="$HOME/.config/i3"
+mkdir -p "$CONFIG_DIR"
+curl -fsSL "https://raw.githubusercontent.com/KickedDroid/dotfiles/refs/heads/main/i3/config" -o "$CONFIG_DIR/config"
 
-CONFIG_URL="https://raw.githubusercontent.com/KickedDroid/dotfiles/refs/heads/main/i3/config"
-CONFIG_DIR="${HOME}/.config/i3"
+# Rust and Cargo
+echo "[+] Setting up Rust environment..."
+if ! command -v cargo &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+fi
+source "$HOME/.cargo/env"
 
-echo "[+] Setting up i3 configuration …"
-mkdir -p "${CONFIG_DIR}"                     # create the directory if it doesn't exist
-curl -fsSL "${CONFIG_URL}" -o "${CONFIG_DIR}/config"
+echo "[+] Installing Cargo tools (this may take a while)..."
+cargo install -q --locked zellij rustscan zoxide bottom
 
-echo "[+] i3 is installed and configured. Start it with 'startx' or log out/in.";
+# Zellij Config
+mkdir -p "$HOME/.config/zellij"
+wget -O "$HOME/.config/zellij/config.kdl" https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/zellij/config.kdl
 
-echo "[!] Starting rust configuration ...";
-
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh;
-. "$HOME/.cargo/env";
-cargo install --locked zellij;
-touch ~/.config/zellij/config.kdl; 
-wget -O ~/.config/zellij/config.kdl https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/zellij/config.kdl
-
-cargo install rustscan; 
-cargo install zoxide;
-cargo install bottom; 
-
-
-
-echo "[+] Cloning tools ..."
-TOOLS_DIR="${HOME}/Documents/tools"
-mkdir -p "${TOOLS_DIR}"
-cd "${TOOLS_DIR}"
+# Tooling Repositories
+echo "[+] Cloning tool repositories..."
+mkdir -p "$TOOLS_DIR"
+cd "$TOOLS_DIR"
 
 declare -a REPOS=(
     "https://github.com/arthaud/git-dumper.git"
@@ -51,31 +57,27 @@ declare -a REPOS=(
     "https://github.com/jalvarezz13/Krb5RoastParser.git"
 )
 
-echo "[+] Cloning ${#REPOS[@]} repositories into ${TOOLS_DIR} …"
 for repo in "${REPOS[@]}"; do
-    git clone --depth 1 "${repo}"
+    repo_name=$(basename "$repo" .git)
+    if [ ! -d "$repo_name" ]; then
+        git clone --depth 1 "$repo"
+    fi
 done
 
-echo "[+] Installing gopacket"
-sudo apt install libpcap-dev -y
-sudo apt install golang -y
-git clone https://github.com/mandiant/gopacket
-gopacket/install.sh --target native
+echo "[+] Building gopacket..."
+if [ ! -d "gopacket" ]; then
+    git clone https://github.com/mandiant/gopacket
+    cd gopacket && ./install.sh --target native && cd ..
+fi
 
-LS_AD_USERS_URL="https://github.com/KickedDroid/ls-ad-users/raw/refs/heads/master/ls-ad-users"
-LS_AD_USERS_FILE="${TOOLS_DIR}/ls-ad-users"
-
-echo "[+] Downloading ls‑ad‑users script …"
-wget -q -O "${LS_AD_USERS_FILE}" "${LS_AD_USERS_URL}"
-chmod +x "${LS_AD_USERS_FILE}" 
-
-echo "[+] All tools are now in ${TOOLS_DIR}"
-echo "[+] Setting .zshrc"
-wget https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/.zshrc;
+echo "[+] Downloading ls-ad-users..."
+wget -q -O "ls-ad-users" "https://github.com/KickedDroid/ls-ad-users/raw/refs/heads/master/ls-ad-users"
+chmod +x "ls-ad-users"
 
 
+echo "[+] Applying final .zshrc..."
+wget -O "$HOME/.zshrc" https://github.com/KickedDroid/dotfiles/raw/refs/heads/main/.zshrc
 
-
-
-
-
+echo "-------------------------------------------------------"
+echo "[SUCCESS] Setup complete. Please restart your terminal."
+echo "-------------------------------------------------------"
