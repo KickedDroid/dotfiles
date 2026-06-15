@@ -14,7 +14,7 @@ set $mod Mod4
 exec --no-startup-id xset -dpms
 exec --no-startup-id xset s off
 exec --no-startup-id feh --bg-scale ~/Pictures/backgrounds/
-exec --no-startup-id xrandr --output Virtual-1 --mode \"1920x1080\"
+exec --no-startup-id xrandr --output Virtual-1 --mode \"2048x1152\"
 # Start picom
 exec_always --no-startup-id picom --config ~/.config/picom/picom.conf
 # Font for window titles. Will also be used by the bar unless a different font
