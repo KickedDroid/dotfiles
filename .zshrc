@@ -182,6 +182,134 @@ addvhost() {
 
     grep "^$ip" /etc/hosts
 }
+# HTB Machine Bootstrap Function
+# Add to ~/.zshrc or a sourced file
+
+function htb-setup() {
+    local machine_name="$1"
+    local machine_ip="$2"
+
+    if [[ $# -lt 2 ]]; then
+        echo "[!] Usage: htb-setup <machine-name> <machine-ip>"
+        echo "[i] Example: htb-setup jerry 10.10.10.10"
+        return 1
+    fi
+
+    local htb_dir="${HOME}/Documents/htb"
+    local machine_dir="${htb_dir}/${machine_name}"
+
+    # 1. Directory structure
+    mkdir -p "${machine_dir}"/{notes,exploits,scans}
+    echo "[+] Created working directory: ${machine_dir}"
+
+    # 2. Generate notes template
+    cat > "${machine_dir}/notes/machine.md" <<TEMPLATE
+# ${machine_name}
+
+## Target Info
+- **IP:** ${machine_ip}
+- **Hostname:** ${machine_name}.htb
+- **OS:** TBD
+- **Difficulty:** TBD
+
+## Services
+| Port | Protocol | Service | Version |
+|------|----------|---------|---------|
+
+## Recon
+- [ ] Initial nmap scan
+- [ ] Web enumeration
+- [ ] Service enumeration
+
+## Foothold
+- [ ] Initial access
+- [ ] User flag
+
+## Privilege Escalation
+- [ ] Root flag
+
+## Loot
+\`\`\`
+USER:
+ROOT:
+\`\`\`
+TEMPLATE
+
+    echo "[+] Generated notes template: ${machine_dir}/notes/machine.md"
+
+    # 3. /etc/hosts management (reuses your addvhost)
+    addvhost "${machine_ip}" "${machine_name}.htb"
+
+    # 4. Quick reference commands file
+    cat > "${machine_dir}/quick_commands.sh" <<TEMPLATE
+#!/bin/zsh
+# Quick commands for ${machine_name} (${machine_ip})
+
+# Nmap
+nmap -sC -sV -oA ${machine_dir}/scans/initial ${machine_ip}
+
+# Web enum
+gobuster dir -u http://${machine_ip} -w /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt -o ${machine_dir}/scans/gobuster.txt
+
+# Service enumeration
+# whatweb http://${machine_ip}
+# ffuf -u http://${machine_ip}/FUZZ -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt
+TEMPLATE
+    chmod +x "${machine_dir}/quick_commands.sh"
+    echo "[+] Generated quick commands: ${machine_dir}/quick_commands.sh"
+
+    # 5. Zellij session with KDL layout
+    local zellij_session="htb-${machine_name}"
+    zellij delete-session "${zellij_session}" 2>/dev/null
+
+    local layout_file="/tmp/htb-${machine_name}.kdl"
+    cat > "${layout_file}" <<TEMPLATE
+layout {
+
+    pane size=1 borderless=false {
+        plugin location="zellij:status-bar"
+    }
+    // Main content: left column (recon/exploit) | right column (notes)
+    pane split_direction="vertical" {
+        // Left column: stacked panes
+        pane split_direction="horizontal" {
+            pane {
+                command "zsh"
+                cwd "${machine_dir}"
+            }
+            pane {
+                command "zsh"
+                cwd "${machine_dir}"
+            }
+        }
+        // Right column: nvim with notes
+        pane {
+            command "nvim"
+            args "${machine_dir}/notes/machine.md"
+            cwd "${machine_dir}"
+        }
+    }
+    pane size=1 borderless=false {
+        plugin location="zellij:tab-bar"
+    }
+}
+TEMPLATE
+
+    echo "[+] Launching Zellij session: ${zellij_session}"
+    echo "========================================"
+    echo " Machine:  ${machine_name}"
+    echo " IP:       ${machine_ip}"
+    echo " Workdir:  ${machine_dir}"
+    echo " Session:  ${zellij_session}"
+    echo "========================================"
+
+    cd "${machine_dir}" || return 1
+
+    zellij --layout "${layout_file}" attach --create "${zellij_session}"
+}
+
+# Convenience alias
+alias htb='htb-setup'
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
